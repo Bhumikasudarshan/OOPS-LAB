@@ -1,35 +1,35 @@
 #include <iostream>
+#include <exception>
 using namespace std;
 
-class Animal {
-public:
-    virtual void speak() const = 0;
-
-    virtual ~Animal() {
-        cout << "~Animal\n";
+struct NetworkError : exception {
+    const char* what() const noexcept override {
+        return "network error";
     }
 };
 
-class Dog : public Animal {
-public:
-    void speak() const override {
-        cout << "Woof\n";
-    }
-
-    ~Dog() {
-        cout << "~Dog\n";
+struct TimeoutError : NetworkError {
+    const char* what() const noexcept override {
+        return "timeout";
     }
 };
+
+void fetch(int ms) {
+    if (ms > 100)
+        throw TimeoutError();
+
+    cout << "fetched in " << ms << " ms\n";
+}
 
 int main() {
-    Animal *a = new Dog();
-
-    if (Dog *d = dynamic_cast<Dog*>(a)) {
-        cout << "downcast ok -> ";
-        d->speak();
+    for (int d : {50, 200}) {
+        try {
+            fetch(d);
+        }
+        catch (const NetworkError &e) {
+            cout << "caught: " << e.what() << endl;
+        }
     }
-
-    delete a;
 
     return 0;
 }
