@@ -1,57 +1,45 @@
 #include <iostream>
+#include <exception>
+#include <string>
 using namespace std;
 
-class Shape {
-public:
-    virtual double area() const = 0;
-    virtual void name() const = 0;
-    virtual ~Shape() {}
-};
-
-class Circle : public Shape {
-    double r;
+class InvalidAge : public exception {
+    string msg;
 
 public:
-    Circle(double r) : r(r) {}
+    InvalidAge(int a) : msg("Invalid age: " + to_string(a)) {}
 
-    double area() const override {
-        return 3.14159 * r * r;
-    }
-
-    void name() const override {
-        cout << "Circle ";
+    const char* what() const noexcept override {
+        return msg.c_str();
     }
 };
 
-class Square : public Shape {
-    double s;
+void registerVoter(int age) {
+    if (age < 0)
+        throw InvalidAge(age);
 
-public:
-    Square(double s) : s(s) {}
+    if (age < 18)
+        throw string("Too young to vote");
 
-    double area() const override {
-        return s * s;
-    }
-
-    void name() const override {
-        cout << "Square ";
-    }
-};
+    cout << "Registered (age " << age << ")\n";
+}
 
 int main() {
-    Shape* shapes[] = {
-        new Circle(2),
-        new Square(3)
-    };
+    int ages[] = {25, 15, -3};
 
-    for (Shape* sh : shapes) {
-        sh->name();
-        cout << "area = " << sh->area() << endl;
-    }
-
-    for (Shape* sh : shapes) {
-        delete sh;
+    for (int a : ages) {
+        try {
+            registerVoter(a);
+        }
+        catch (const InvalidAge &e) {
+            cout << "[ERR] " << e.what() << endl;
+        }
+        catch (const string &s) {
+            cout << "[WARN] " << s << endl;
+        }
+        catch (...) {
+            cout << "[ERR] unknown\n";
+        }
     }
 
     return 0;
-}
