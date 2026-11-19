@@ -1,50 +1,37 @@
 #include <iostream>
+#include <exception>
 using namespace std;
 
-class Account {
-protected:
+class InsufficientFunds : public exception {
+public:
+    const char* what() const noexcept override {
+        return "Insufficient Balance!";
+    }
+};
+
+class BankAccount {
     double balance;
 
 public:
-    Account(double b) {
-        balance = b;
-    }
+    BankAccount(double b) : balance(b) {}
 
-    virtual void calculateInterest() = 0;
+    void withdraw(double amount) {
+        if (amount > balance)
+            throw InsufficientFunds();
 
-    virtual ~Account() {}
-};
-
-class Savings : public Account {
-public:
-    Savings(double b) : Account(b) {}
-
-    void calculateInterest() override {
-        cout << "Savings Interest: " << balance * 0.05 << endl;
-    }
-};
-
-class Current : public Account {
-public:
-    Current(double b) : Account(b) {}
-
-    void calculateInterest() override {
-        cout << "Current Interest: " << balance * 0.02 << endl;
+        balance -= amount;
+        cout << "Remaining Balance: " << balance << endl;
     }
 };
 
 int main() {
-    Account* accounts[] = {
-        new Savings(10000),
-        new Current(20000)
-    };
+    BankAccount acc(5000);
 
-    for (Account* a : accounts) {
-        a->calculateInterest();
+    try {
+        acc.withdraw(6000);
     }
-
-    for (Account* a : accounts) {
-        delete a;
+    catch (const InsufficientFunds &e) {
+        cout << e.what() << endl;
     }
 
     return 0;
