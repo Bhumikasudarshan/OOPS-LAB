@@ -1,36 +1,68 @@
 #include <iostream>
-#include <string>
+#include <exception>
 using namespace std;
 
-class Logger {
+class Overflow : public exception {
 public:
-    virtual void write(string msg) = 0;
-};
-
-class ConsoleLogger : public Logger {
-public:
-    void write(string msg) override {
-        cout << "Console Logger: " << msg << endl;
+    const char* what() const noexcept override {
+        return "Stack Overflow!";
     }
 };
 
-class FileLogger : public Logger {
+class Underflow : public exception {
 public:
-    void write(string msg) override {
-        cout << "File Logger: " << msg << endl;
+    const char* what() const noexcept override {
+        return "Stack Underflow!";
+    }
+};
+
+class Stack {
+    int arr[3];
+    int top;
+
+public:
+    Stack() {
+        top = -1;
+    }
+
+    void push(int x) {
+        if (top == 2)
+            throw Overflow();
+
+        arr[++top] = x;
+        cout << "Pushed: " << x << endl;
+    }
+
+    void pop() {
+        if (top == -1)
+            throw Underflow();
+
+        cout << "Popped: " << arr[top--] << endl;
     }
 };
 
 int main() {
-    ConsoleLogger c;
-    FileLogger f;
+    Stack s;
 
-    Logger* logger;
+    try {
+        s.push(10);
+        s.push(20);
+        s.push(30);
+        s.push(40);
+    }
+    catch (const Overflow &e) {
+        cout << e.what() << endl;
+    }
 
-    logger = &c;
-    logger->write("Hello World");
-
-    logger = &f;
-    logger->write("Hello World");
+    try {
+        s.pop();
+        s.pop();
+        s.pop();
+        s.pop();
+    }
+    catch (const Underflow &e) {
+        cout << e.what() << endl;
+    }
 
     return 0;
+}
