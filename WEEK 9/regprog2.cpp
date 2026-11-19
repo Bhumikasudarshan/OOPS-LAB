@@ -1,35 +1,34 @@
 #include <iostream>
+#include <exception>
 using namespace std;
 
-class Base {
+class Guard {
+    int n;
+
 public:
-    void normal() {
-        cout << "Base::normal (early binding)\n";
+    Guard(int n) : n(n) {
+        cout << "acquire " << n << endl;
     }
 
-    virtual void special() {
-        cout << "Base::special\n";
+    ~Guard() {
+        cout << "release " << n << endl;
     }
 };
 
-class Derived : public Base {
-public:
-    void normal() {
-        cout << "Derived::normal\n";
-    }
+void risky() {
+    Guard g1(1);
+    Guard g2(2);
 
-    void special() override {
-        cout << "Derived::special (late binding)\n";
-    }
-};
+    throw runtime_error("boom");
+}
 
 int main() {
-    Derived d;
-
-    Base *p = &d;
-
-    p->normal();
-    p->special();
+    try {
+        risky();
+    }
+    catch (const exception &e) {
+        cout << "caught: " << e.what() << endl;
+    }
 
     return 0;
 }
