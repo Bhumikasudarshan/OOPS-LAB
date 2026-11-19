@@ -1,32 +1,31 @@
 #include <iostream>
+#include <exception>
 using namespace std;
 
-class Base {
+class MathError : public exception {
 public:
-    ~Base() {
-        cout << "Base Destructor\n";
+    const char* what() const noexcept override {
+        return "Math Error!";
     }
 };
 
-class Derived : public Base {
-    int* ptr;
-
+class DivideByZero : public MathError {
 public:
-    Derived() {
-        ptr = new int[100];
-        cout << "Memory Allocated\n";
-    }
-
-    ~Derived() {
-        delete[] ptr;
-        cout << "Derived Destructor\n";
+    const char* what() const noexcept override {
+        return "Division by Zero!";
     }
 };
 
 int main() {
-    Base* b = new Derived();
-
-    delete b;
+    try {
+        throw DivideByZero();
+    }
+    catch (const DivideByZero &e) {
+        cout << e.what() << endl;
+    }
+    catch (const MathError &e) {
+        cout << e.what() << endl;
+    }
 
     return 0;
 }
